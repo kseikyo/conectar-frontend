@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent, useEffect, ReactNode, useContext, Fragment, useCallback } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect, useRef, useContext, Fragment, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { BodyProjects } from './styles';
 import { BodyModalDefault } from '../../components/Modal/styles';
@@ -23,7 +23,10 @@ import Vacancy from '../../components/Vacancy';
 import Textarea from '../../components/Textarea';
 import Input from '../../components/Input';
 import Dropzone from '../../components/Dropzone';
-import { textareaChange } from '../../utils/textareaChange';
+import * as Yup from 'yup';
+import { FormHandles } from '@unform/core';
+import { Form } from '@unform/web';
+import getValidationErrors from '../../utils/getValidationErrors';
 interface routeParms {
   id: string;
 }
@@ -59,19 +62,17 @@ function Projects() {
   const [openModal, setOpenModal] = useState<boolean>(isAuthenticated);
   const projeto_id = useParams<routeParms>().id;
   const [project, setProject] = useState({} as ProjectType)
-  const [formData, setFormData] = useState({} as ProjectType)
-  const [recordedAreas, setRecordedAreas] = useState<Array<AreaType>>([]);
-  const [recordedTools, setRecordedTools] = useState<Array<ToolType>>([]);
+  const [storedAreas, setStoredAreas] = useState<Array<AreaType>>([]);
+  const [storedTools, setStoredTools] = useState<Array<ToolType>>([]);
   const [selectedImage, setSelectedImage] = useState<File>();
-
+  const formRef = useRef<FormHandles>(null);
   useEffect(() => {
     const res = api
       .get(`/api/v1/projeto/${projeto_id}`)
       .then((response) => {
         setProject(response.data);
-        setRecordedTools(response.data.habilidades);
-        setRecordedAreas(response.data.areas);
-        setFormData(response.data);
+        setStoredTools(response.data.habilidades);
+        setStoredAreas(response.data.areas);
       })
       .catch((err: AxiosError) => {
         return err?.response?.data.detail;
@@ -79,29 +80,44 @@ function Projects() {
     console.log(res);
 
   }, [projeto_id]);
-  useEffect(() => {
-    modalContent != initialModalContent && setOpenModal(true);
-  }, [initialModalContent, modalContent])
+  const handleSubmit = useCallback(
+    async (formData: ProjectType) => {
+      console.log(formData);
+      try {
+        // Remove all previogeus errors
+        formRef.current?.setErrors({});
+        const schema = Yup.object().shape({
+          nome: modalContent.nome ? Yup.string().required('Nome é obrigatório') : Yup.string(),
+          descricao: modalContent.descricao? Yup.string().required('Descrição é obrigatória') : Yup.string(),
+          objetivo: modalContent.objetivo? Yup.string().required('Objetivo é obrigatório') : Yup.string(),
+        }); 
+        await schema.validate(formData, {
+          abortEarly: false,
+        });
+        // Validation passed
+        const {
+          nome,
+          descricao,
+          objetivo,
+        } = formData;
+        const data= {
+          nome,
+          descricao,
+          objetivo,
+          area:storedAreas,
+          habilidades:storedTools,
+        }
+        await api.put(`/api/v1/projeto/${projeto_id}`, data);
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          // Validation failed
+          const errors = getValidationErrors(err);
+          formRef.current?.setErrors(errors);
+        }
+      }
+    }, [modalContent,projeto_id]
+  );
 
-
-  function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
-    const target = event.target;
-    const { name } = target;
-    const value = target.type === "checkbox" ? target.checked : target.value;
-    console.log(event.target);
-    setFormData({ ...formData, [name]: value });
-  }
-
-  function handleTextAreaChange(event: ChangeEvent<HTMLTextAreaElement>) {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  }
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    setProject({ ...formData });
-    setOpenModal(false);
-    console.log(formData)
-  }
   return (
     <BodyProjects>
       <Modal
@@ -117,7 +133,7 @@ function Projects() {
             <Login onSuccessLogin={() => setOpenModal(isAuthenticated)} />
           </BodyModalDefault> :
           <>
-            {!modalContent.vaga && <form className="modal" onSubmit={handleSubmit}>
+            {!modalContent.vaga && <Form ref={formRef} className="modal" onSubmit={handleSubmit}>
               {modalContent.foto && <Dropzone onFileUploaded={setSelectedImage} />}
               {modalContent.nome && <Input
                 name="nome"
@@ -136,16 +152,16 @@ function Projects() {
               />}
               {modalContent.areas && <SelectArea
                 label="Selecione as àreas de atuação"
-                callbackSelectedAreas={recordedAreas}
-                setCallbackSelectedAreas={setRecordedAreas}
+                callbackSelectedAreas={storedAreas}
+                setCallbackSelectedAreas={setStoredAreas}
               />}
               {modalContent.habilidades && <SelectTool
                 label="Selecione as ferramentas ou habilidades"
-                callbackSelectedTools={recordedTools}
-                setCallbackSelectedTools={setRecordedTools}
+                callbackSelectedTools={storedTools}
+                setCallbackSelectedTools={setStoredTools}
               />}
               <Button theme="primary-green" type="submit">Salvar</Button>
-            </form>}
+            </Form>}
             {modalContent.vaga && <Vacancy project={project} />}
           </>
         }
@@ -161,7 +177,10 @@ function Projects() {
             <img
               src={edit}
               alt="editar a imagem de capa"
-              onClick={() => setModalContent({ ...initialModalContent, "foto": true })}
+              onClick={() => {
+                setModalContent({ ...initialModalContent, "foto": true })
+                setOpenModal(true);
+              }}
             />
           </section>
         </div>
@@ -171,7 +190,10 @@ function Projects() {
             <img
               src={edit}
               alt="editar o nome"
-              onClick={() => setModalContent({ ...initialModalContent, "nome": true })}
+              onClick={() => {
+                setModalContent({ ...initialModalContent, "nome": true })
+                setOpenModal(true);
+              }}
             />
           </h1>
           <div className="icons">
@@ -198,7 +220,11 @@ function Projects() {
               <img
                 src={edit}
                 alt="editar"
-                onClick={() => setModalContent({ ...initialModalContent, "objetivo": true })}
+                onClick={() => {
+                  setModalContent({ ...initialModalContent, "objetivo": true })
+                  setOpenModal(true);
+
+                }}
               />
             </section>
             <p>{project.objetivo}</p>
@@ -209,7 +235,11 @@ function Projects() {
               <img
                 src={edit}
                 alt="editar"
-                onClick={() => setModalContent({ ...initialModalContent, "descricao": true })}
+                onClick={() => {
+                  setModalContent({ ...initialModalContent, "descricao": true })
+                  setOpenModal(true);
+
+                }}
               />
             </section>
             <p>{project.descricao}</p>
@@ -221,7 +251,10 @@ function Projects() {
             <img
               src={edit}
               alt="editar"
-              onClick={() => setModalContent({ ...initialModalContent, "areas": true })}
+              onClick={() => {
+                setModalContent({ ...initialModalContent, "areas": true })
+                setOpenModal(true);
+              }}
             />
           </legend>
           <aside>
@@ -235,7 +268,10 @@ function Projects() {
             <img
               src={edit}
               alt="editar"
-              onClick={() => setModalContent({ ...initialModalContent, "habilidades": true })}
+              onClick={() => {
+                setModalContent({ ...initialModalContent, "habilidades": true })
+                setOpenModal(true);
+              }}
             />
           </legend>
           <aside>
@@ -253,7 +289,11 @@ function Projects() {
                 <img
                 src={edit}
                 alt="editar"
-                onClick={() => setModalContent({ ...initialModalContent, "vaga": true })}
+                onClick={() => {
+                  setModalContent({ ...initialModalContent, "vaga": true })
+                  setOpenModal(true);
+
+                }}
               />
             </legend>
 

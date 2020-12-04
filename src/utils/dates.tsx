@@ -14,11 +14,11 @@ export const monthOptions: OptionHTMLAttributes<HTMLOptionElement>[] = [
   { value: 11, label: "Novembro" },
   { value: 12, label: "Dezembro" },
 ];
-// preciso revisar
+
 export function toMonth(month: string) {
   /**
    * Helper function to handle inputChanges when using hooks
-   * @param {number} month
+   * @param {string} month
    * 
    */
   let stringMonth = [

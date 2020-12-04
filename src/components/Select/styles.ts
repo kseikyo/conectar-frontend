@@ -50,20 +50,6 @@ export const BodySelect = styled.div`
       }
     }
   }
-  .select{
-    *{
-        border-color:var(--yellow) !important;
-        border-width:2px;
-        color:black !important;
-        font: 400 .85rem Roboto !important;
-        :focus-within{
-            box-shadow: 0 0 0 0 !important;
-        }
-    }
-    width:100%;
-    margin-top: 0.3rem;
-    font: 1.6rem;
-  }
   span{
     color:red;
     font:400 .8rem Roboto;

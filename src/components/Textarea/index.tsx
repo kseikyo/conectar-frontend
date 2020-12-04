@@ -23,6 +23,7 @@ const Textarea: React.FC<TextareaProps> = ({ name, label, subLabel, pathSubLabel
     <BodyTextarea>
       <label htmlFor={name}>{label}<Link to={`/${pathSubLabel}`}>{subLabel}</Link> </label>
       <textarea id={fieldName} ref={textareRef} defaultValue={defaultValue} {...rest} />
+      {error && <span>{error}</span>}
     </BodyTextarea>
 
   )

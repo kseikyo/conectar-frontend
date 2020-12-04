@@ -58,99 +58,103 @@ function SignUp() {
       : false
   );
 
-  async function handleSubmit(formData: PessoaType) {
-    try {
-      // Remove all previous errors
-      formRef.current?.setErrors({});
-      const schema = Yup.object().shape({
-        email: Yup
-        .string()
-        .email('Não corresponde ao formato exemple@ex.com')
-        .required('Email é obrigatório'),
-        password: Yup
-          .string()
-          .matches(/(?=.*[!@#$%^&*])/g, "Deve conter caracteres especiais")
-          .matches(/(?=.*[A-Z])/g, "Deve conter caracteres maiúsculas")
-          .matches(/(?=.*[0-9])/g, "Deve conter caracteres numéricos")
-          .matches(/(?=.*[a-z])/g, "Deve conter caracteres minúsculas")
-          .min(8, 'Deve conter no mínimo 8 caracteres')
-          .required('Senha é obritória'),
-        username: Yup
-          .string()
-          .min(4,'Deve conter no mínimo 4 caracteres')
-          .max(20,'Deve conter no máximo 20 caracteres')
-          .required('Usuário é obrigatório'),
-        nome: Yup
-        .string()
-        .max(80)
-        .matches(/(?=.*[ ])/g,'Informe o nome completo')
-        .required('Usuário é obrigatório'),
-      });
-      await schema.validate(formData, {
-        abortEarly: false,
-      });
-      // Validation passed
-      const data = new FormData();
+  const handleSubmit = useCallback(
+    async (formData: PessoaType) => {
+      try {
+        // Remove all previous errors
+        formRef.current?.setErrors({});
+        const schema = Yup.object().shape({
+          email: Yup
+            .string()
+            .email('Não corresponde ao formato exemple@ex.com')
+            .required('Email é obrigatório'),
+          password: Yup
+            .string()
+            .matches(/(?=.*[!@#$%^&*])/g, "Deve conter caracteres especiais")
+            .matches(/(?=.*[A-Z])/g, "Deve conter caracteres maiúsculas")
+            .matches(/(?=.*[0-9])/g, "Deve conter caracteres numéricos")
+            .matches(/(?=.*[a-z])/g, "Deve conter caracteres minúsculas")
+            .min(8, 'Deve conter no mínimo 8 caracteres')
+            .required('Senha é obritória'),
+          username: Yup
+            .string()
+            .min(4, 'Deve conter no mínimo 4 caracteres')
+            .max(20, 'Deve conter no máximo 20 caracteres')
+            .required('Usuário é obrigatório'),
+          nome: Yup
+            .string()
+            .max(80)
+            .matches(/(?=.*[ ])/g, 'Informe o nome completo')
+            .required('Usuário é obrigatório'),
+        });
+        await schema.validate(formData, {
+          abortEarly: false,
+        });
+        // Validation passed
+        const data = new FormData();
 
-      data.append("email", formData.email);
-      data.append("nome", formData.nome);
-      data.append("username", formData.username);
-      data.append("password", formData.password);
-      await api.post("/api/signup", data);
-      setShowNextStep(true);
-      console.log(formData);
-    } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        // Validation failed
-        const errors = getValidationErrors(err);
-        formRef.current?.setErrors(errors);
-        //alert(errors);
+        data.append("email", formData.email);
+        data.append("nome", formData.nome);
+        data.append("username", formData.username);
+        data.append("password", formData.password);
+        await api.post("/api/signup", data);
+        setShowNextStep(true);
+        console.log(formData);
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          // Validation failed
+          const errors = getValidationErrors(err);
+          formRef.current?.setErrors(errors);
+          //alert(errors);
+        }
       }
     }
-  }
+    , []
+  );
+  const handleSecondSubmit = useCallback(
+    async (formData: PessoaType) => {
 
-  async function handleSecondSubmit(formData: PessoaType) {
+      try {
+        // Remove all previogeus errors
+        formRef.current?.setErrors({});
+        const schema = Yup.object().shape({
+          telefone: Yup.string().required('Telefone é obrigatório'),
+          year: Yup.string().required('Ano é obrigatório'),
+          month: Yup.string().required('Mês é obrigatório'),
+          day: Yup.string().required('Dia é obrigatório'),
+          aliado: Yup.string(),
+          colaborador: Yup.string(),
+          idealizador: Yup.string(),
+        });
+        await schema.validate(formData, {
+          abortEarly: false,
+        });
+        // Validation passed
+        const { year, month, day, telefone } = formData;
 
-    try {
-      // Remove all previogeus errors
-      formRef.current?.setErrors({});
-      const schema = Yup.object().shape({
-        telefone: Yup.string().required('Telefone é obrigatório'),
-        year: Yup.string().required('Ano é obrigatório'),
-        month: Yup.string().required('Mês é obrigatório'),
-        day: Yup.string().required('Dia é obrigatório'),
-        aliado: Yup.string(),
-        colaborador: Yup.string(),
-        idealizador: Yup.string(),
-      });
-      await schema.validate(formData, {
-        abortEarly: false,
-      });
-      // Validation passed
-      const { year, month, day, telefone } = formData;
+        const data_nascimento = `${year}-${month}-${day}`;
 
-      const data_nascimento = `${year}-${month}-${day}`;
+        const aliado = formData.aliado === 'aliado' ? true : false
+        const colaborador = formData.colaborador === 'colaborador' ? true : false
+        const idealizador = formData.idealizador === 'idealizador' ? true : false
 
-      const aliado = formData.aliado === 'aliado' ? true : false
-      const colaborador = formData.colaborador === 'colaborador' ? true : false
-      const idealizador = formData.idealizador === 'idealizador' ? true : false
+        const data = { data_nascimento, aliado, colaborador, idealizador, telefone };
 
-      const data = { data_nascimento, aliado, colaborador, idealizador, telefone };
+        await api.put("/api/v1/pessoas", data, {
+          withCredentials: true,
+        });
+        history.push("/experienceareas");
 
-      await api.put("/api/v1/pessoas", data, {
-        withCredentials: true,
-      });
-      history.push("/experienceareas");
-
-      console.log(formData);
-    } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        // Validation failed
-        const errors = getValidationErrors(err);
-        formRef.current?.setErrors(errors);
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          // Validation failed
+          const errors = getValidationErrors(err);
+          formRef.current?.setErrors(errors);
+        }
       }
-    }
-  }
+    }, []
+  );
+
   /**This function checks if the profile is idealizer, collaborator or ally then advances to the next form and set name and email in formData */
   async function checkProfileType() {
     const { aliado, colaborador, idealizador, nome, email } = (await api.get("/api/v1/pessoas/me")).data;
@@ -191,7 +195,7 @@ function SignUp() {
 
   return (
 
-    <BodySignUp showSecondStep={showNextStep}>
+    <BodySignUp>
 
       {!showNextStep && (
         <Form ref={formRef} onSubmit={handleSubmit} className="area-central container">

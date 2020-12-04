@@ -3,11 +3,9 @@ import styled, { css } from 'styled-components';
 
 
 
-interface StepProps {
-    showSecondStep: boolean;
-}
 
-export const BodySignUp = styled.div<StepProps>`
+
+export const BodySignUp = styled.div`
     display:flex;
     justify-content:center;
     align-items:center;
@@ -28,9 +26,7 @@ export const BodySignUp = styled.div<StepProps>`
             color: var(--green-bg);
         }
         .primeira-etapa{
-            ${props =>
-                props.showSecondStep ? css`display:none;` : css`display:grid;`
-            } 
+            display:grid;
             .area-img{
                 grid-area:img;
                 display:flex;
@@ -99,9 +95,9 @@ export const BodySignUp = styled.div<StepProps>`
 
         }
         .segunda-etapa {
-            ${props =>
-                props.showSecondStep ? css`display:flex;` : css`display:none;`
-            }       
+           
+            display:flex;
+              
             flex-direction:column;
             >section{
                 display:flex;
