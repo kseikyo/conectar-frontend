@@ -134,7 +134,7 @@ function Projects() {
           </BodyModalDefault> :
           <>
             {!modalContent.vaga && <Form ref={formRef} className="modal" onSubmit={handleSubmit}>
-              {modalContent.foto && <Dropzone onFileUploaded={setSelectedImage} />}
+              {modalContent.foto && <Dropzone name="capa"/>}
               {modalContent.nome && <Input
                 name="nome"
                 label="Nome do projeto"

@@ -64,7 +64,7 @@ export const BodyVacancy = styled.section`
             background:none;
             font:500 1rem Roboto;
             color:var(--yellow);
-            span{
+            >span{
                 font:500 1.2rem Roboto;
             }
         }
@@ -88,7 +88,7 @@ export const BodyVacancy = styled.section`
             justify-content:center;
             height:100%;
         }
-        span{
+        >span{
             color:var(--yellow-dark);
         }
         

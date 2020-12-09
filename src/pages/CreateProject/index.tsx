@@ -42,7 +42,7 @@ function CreateProject() {
 
 
   const [selectedTools, setSelectedTools] = useState<ToolType[]>([]);
-  const [showNextStep, setShowNextStep] = useState<boolean>(true);
+  const [showNextStep, setShowNextStep] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(!isAuthenticated);
   const [selectedAreas, setSelectedAreas] = useState<AreaType[]>([]);
   const [idProject, setIdProject] = useState(0);
@@ -57,6 +57,7 @@ function CreateProject() {
         const schema = Yup.object().shape({
           nome: Yup.string().required('Nome é obrigatório'),
           visibilidade: Yup.string(),
+          
         });
         await schema.validate(formData, {
           abortEarly: false,
@@ -147,7 +148,9 @@ function CreateProject() {
                 label="Título do projeto"
               />
               <div className="upload-img">
-                <Dropzone onFileUploaded={setSelectedFile} />
+                <Dropzone  
+                  name="img"
+                />
               </div>
 
               <ToggleSwitch

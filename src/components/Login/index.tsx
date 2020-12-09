@@ -96,6 +96,8 @@ const Login: React.FC<loginProps> = ({ onSuccessLogin }) => {
           const errors = getValidationErrors(error);
 
           formRef.current?.setErrors(errors);
+          console.log(error);
+          
           return;
         }
         alert("Lgoin ou senha incorreto")

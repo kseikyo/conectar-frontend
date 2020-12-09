@@ -91,14 +91,20 @@ const Vacancy: React.FC<VacancyProps> = ({ project }) => {
       // Remove all previogeus errors
       formRef.current?.setErrors({})
       const schema = Yup.object().shape({
-        nome: Yup.string().required('Nome é obrigatório')
+        cargo: Yup.string().required('Cargo é obrigatório'),
+        perfil: Yup.string().required('Perfil é obrigatório'),
+        quantidade: Yup.string().required('Quantidade é obrigatório'),
+        descricao: Yup.string().required('Descrição é obrigatório'),
+        tipoContrato: Yup.string().required('Tipo de contrato é obrigatório'),
+        areas: Yup.array().min(1, 'Áreas de contrato é obrigatório'),
+        habilidade: Yup.array().min(1, 'Habilidades de contrato é obrigatório')
       })
       await schema.validate(formData, {
         abortEarly: false
       })
       // Validation passed
 
-      await api.put(`/api/v1/projeto/`, formData)
+      //await api.put(`/api/v1/projeto/`, formData);
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         // Validation failed
@@ -107,6 +113,7 @@ const Vacancy: React.FC<VacancyProps> = ({ project }) => {
       }
     }
   }, [])
+
   return (
     <BodyVacancy>
       <h2>Vagas</h2>
