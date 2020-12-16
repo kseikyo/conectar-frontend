@@ -34,16 +34,9 @@ function Home() {
   const { handleLogin } = useContext(Context);
   return (
     <BodyHome>
-      <Modal
-        open={showModal}
-        setOpen={setShowModal}
-      >
-        <h1>Será redimensionado para a pagina de explorar projetos(faltante)</h1>
-      </Modal>
-
+      
       <main>
         <div className="topo-background">
-          <NavBar />
           <div className="container topo">
             <section className="hero">
               <img src={hero} alt="imagem de redes neurais" />
@@ -51,9 +44,7 @@ function Home() {
             <section className="area-login">
               <h1>Encontre o </h1>
               <h1>time ideal</h1>
-              <Login
-                onSuccessLogin={() => { setShowModal(true); handleLogin(true) }}
-              />
+              
             </section>
             <label className="arrow-bottom">
               <a href="#introducao" >
@@ -216,7 +207,6 @@ function Home() {
                 </section>
               </aside>
             </div>
-            <Button theme="primary-green">Criar sua conta</Button>
           </section>
           <label className="arrow-bottom">
             <a href="#colaborador">
@@ -263,7 +253,6 @@ function Home() {
                 </section>
               </aside>
             </div>
-            <Button theme="primary-green">Criar sua conta</Button>
             <img src={colaborador} alt="Avatar fictício do colaborador" />
           </section>
           <label className="arrow-bottom">
@@ -310,7 +299,6 @@ function Home() {
                 </section>
               </aside>
             </div>
-            <Button theme="primary-green">Criar sua conta</Button>
           </section>
           <label className="arrow-bottom">
 
@@ -332,7 +320,6 @@ function Home() {
           </p>
           <aside>
             <img src={curtiu} alt="e aí curtiu? vem pra cá!" />
-            <Button theme="primary-green">Crie sua conta</Button>
           </aside>
           <footer>
             <img src={migos} alt=" vamos ser amigos nas redes sociais" />
